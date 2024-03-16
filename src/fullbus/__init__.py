@@ -15,7 +15,17 @@ def find_recently_modified_files(root_dir, extensions, timespan):
             if current_time - modification_time <= timespan:
                 print(file_path)
 
+def find_recently_modified_files(root_dir, extensions, timespan):
+    current_time = time.time()
 
+    for file_path in root_dir.rglob("*"):
+        if file_path.is_file() and (not extensions or file_path.suffix.lower() in extensions):
+            modification_time = file_path.stat().st_mtime
+
+            if current_time - modification_time <= timespan:
+                print(file_path)
+
+                
 def parse_timespan(timespan_str):
     unit = timespan_str[-1].lower()
     value = float(timespan_str[:-1])
