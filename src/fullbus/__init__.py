@@ -73,9 +73,8 @@ def main() -> int:
     parser.add_argument(
         "-d",
         "--directory",
-        type=str,
-        default="/",
-        help="Starting directory for the search (default: /)",
+        action="append",
+        help="Directories for the search (default: /). Can be specified multiple times.",
     )
     parser.add_argument(
         "-e",
@@ -95,9 +94,10 @@ def main() -> int:
         action="append",
         help="Paths to include in the search (case-insensitive)",
     )
+
     args = parser.parse_args()
 
-    root_directory = pathlib.Path(args.directory)
+    root_directories = args.directory or ["/"]
     file_extensions = [
         ext.lower() if ext.startswith(".") else "." + ext.lower()
         for ext in (args.ext or [])
@@ -123,9 +123,15 @@ def main() -> int:
         print(f"Searching for files modified within the last {args.timespan}.")
 
     try:
-        find_recently_modified_files(
-            root_directory, file_extensions, excluded_paths, included_paths, timespan
-        )
+        for root_directory in root_directories:
+            print(f"Searching in directory: {root_directory}")
+            find_recently_modified_files(
+                pathlib.Path(root_directory),
+                file_extensions,
+                excluded_paths,
+                included_paths,
+                timespan,
+            )
     except KeyboardInterrupt:
         print("\nSearch canceled by the user.")
 
