@@ -61,7 +61,7 @@ def main() -> int:
 
     root_directory = pathlib.Path(args.directory)
     file_extensions = [
-        ext.lower() if ext.startswith(".") else "." + ext.lower() for ext in args.ext
+        ext.lower() if ext.startswith(".") else "." + ext.lower() for ext in (args.ext or [".log"])
     ]
     timespan = parse_timespan(args.timespan)
 
