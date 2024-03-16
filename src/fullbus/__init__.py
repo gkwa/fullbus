@@ -5,12 +5,21 @@ import time
 __project_name__ = "fullbus"
 
 
-def find_recently_modified_files(root_dir, extensions, excluded_paths, timespan=None):
+def find_recently_modified_files(
+    root_dir, extensions, excluded_paths, included_paths, timespan=None
+):
     current_time = time.time()
 
     try:
         for file_path in root_dir.rglob("*"):
-            if any(exclude in str(file_path) for exclude in excluded_paths):
+            if any(
+                exclude.lower() in str(file_path).lower() for exclude in excluded_paths
+            ):
+                continue
+
+            if included_paths and not any(
+                include.lower() in str(file_path).lower() for include in included_paths
+            ):
                 continue
 
             if file_path.is_file() and (
@@ -69,6 +78,12 @@ def main() -> int:
         action="append",
         help="Paths to exclude from the search",
     )
+    parser.add_argument(
+        "-i",
+        "--include",
+        action="append",
+        help="Paths to include in the search (case-insensitive)",
+    )
     args = parser.parse_args()
 
     root_directory = pathlib.Path(args.directory)
@@ -77,6 +92,7 @@ def main() -> int:
         for ext in (args.ext or [])
     ]
     excluded_paths = args.exclude or []
+    included_paths = args.include or []
     timespan = parse_timespan(args.timespan) if args.timespan else None
 
     if not file_extensions:
@@ -87,6 +103,9 @@ def main() -> int:
     if excluded_paths:
         print(f"Excluding paths: {', '.join(excluded_paths)}")
 
+    if included_paths:
+        print(f"Including paths: {', '.join(included_paths)}")
+
     if timespan is None:
         print("No timespan specified. Searching without timespan limit.")
     else:
@@ -94,7 +113,7 @@ def main() -> int:
 
     try:
         find_recently_modified_files(
-            root_directory, file_extensions, excluded_paths, timespan
+            root_directory, file_extensions, excluded_paths, included_paths, timespan
         )
     except KeyboardInterrupt:
         print("\nSearch canceled by the user.")
