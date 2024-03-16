@@ -5,6 +5,26 @@ import time
 __project_name__ = "fullbus"
 
 
+def process_file(
+    file_path, extensions, excluded_paths, included_paths, timespan, current_time
+):
+    if any(exclude.lower() in str(file_path).lower() for exclude in excluded_paths):
+        return
+
+    if included_paths and not any(
+        include.lower() in str(file_path).lower() for include in included_paths
+    ):
+        return
+
+    if file_path.is_file() and (
+        not extensions or file_path.suffix.lower() in extensions
+    ):
+        modification_time = file_path.stat().st_mtime
+
+        if timespan is None or current_time - modification_time <= timespan:
+            print(file_path)
+
+
 def find_recently_modified_files(
     root_dir, extensions, excluded_paths, included_paths, timespan=None
 ):
@@ -12,23 +32,14 @@ def find_recently_modified_files(
 
     try:
         for file_path in root_dir.rglob("*"):
-            if any(
-                exclude.lower() in str(file_path).lower() for exclude in excluded_paths
-            ):
-                continue
-
-            if included_paths and not any(
-                include.lower() in str(file_path).lower() for include in included_paths
-            ):
-                continue
-
-            if file_path.is_file() and (
-                not extensions or file_path.suffix.lower() in extensions
-            ):
-                modification_time = file_path.stat().st_mtime
-
-                if timespan is None or current_time - modification_time <= timespan:
-                    print(file_path)
+            process_file(
+                file_path,
+                extensions,
+                excluded_paths,
+                included_paths,
+                timespan,
+                current_time,
+            )
     except KeyboardInterrupt:
         print("\nQuitting prematurely due to cancellation.")
 
