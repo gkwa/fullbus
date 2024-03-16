@@ -60,9 +60,14 @@ def main() -> int:
 
     root_directory = pathlib.Path(args.directory)
     file_extensions = [
-        ext.lower() if ext.startswith(".") else "." + ext.lower() for ext in args.ext
+        ext.lower() if ext.startswith(".") else "." + ext.lower() for ext in (args.ext or [])
     ]
     timespan = parse_timespan(args.timespan)
+
+    if not file_extensions:
+        print("No file extensions specified. Searching for all files.")
+    else:
+        print(f"Searching for files with extensions: {', '.join(file_extensions)}")
 
     find_recently_modified_files(root_directory, file_extensions, timespan)
 
