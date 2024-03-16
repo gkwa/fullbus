@@ -54,7 +54,6 @@ def main() -> int:
         "-e",
         "--ext",
         action="append",
-        default=[".log"],
         help="File extensions to search for (default: .log)",
     )
     args = parser.parse_args()
