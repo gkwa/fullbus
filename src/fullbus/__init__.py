@@ -4,18 +4,25 @@ import time
 
 __project_name__ = "fullbus"
 
+
 def find_recently_modified_files(root_dir, extensions, excluded_paths, timespan=None):
     current_time = time.time()
 
-    for file_path in root_dir.rglob("*"):
-        if any(exclude in str(file_path) for exclude in excluded_paths):
-            continue
+    try:
+        for file_path in root_dir.rglob("*"):
+            if any(exclude in str(file_path) for exclude in excluded_paths):
+                continue
 
-        if file_path.is_file() and (not extensions or file_path.suffix.lower() in extensions):
-            modification_time = file_path.stat().st_mtime
+            if file_path.is_file() and (
+                not extensions or file_path.suffix.lower() in extensions
+            ):
+                modification_time = file_path.stat().st_mtime
 
-            if timespan is None or current_time - modification_time <= timespan:
-                print(file_path)
+                if timespan is None or current_time - modification_time <= timespan:
+                    print(file_path)
+    except KeyboardInterrupt:
+        print("\nQuitting prematurely due to cancellation.")
+
 
 def parse_timespan(timespan_str):
     unit = timespan_str[-1].lower()
@@ -33,6 +40,7 @@ def parse_timespan(timespan_str):
         raise ValueError(
             "Invalid timespan format. Use 's' for seconds, 'm' for minutes, 'h' for hours, or 'd' for days."
         )
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Find recently modified files.")
@@ -84,6 +92,11 @@ def main() -> int:
     else:
         print(f"Searching for files modified within the last {args.timespan}.")
 
-    find_recently_modified_files(root_directory, file_extensions, excluded_paths, timespan)
+    try:
+        find_recently_modified_files(
+            root_directory, file_extensions, excluded_paths, timespan
+        )
+    except KeyboardInterrupt:
+        print("\nSearch canceled by the user.")
 
     return 0
